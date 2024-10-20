@@ -1,0 +1,27 @@
+[
+    {
+        "name": "BrakePedal",
+        "type": 1, 
+        "signal": 1
+    },
+    {
+        "name": "AccelPedal",
+        "type": 2,
+        "signal": 1
+    },
+    {
+        "name": "Wheel",
+        "type": 2,
+        "signal": 1
+    },
+    {
+        "name": "TurnSignal",
+        "type": 1,
+        "signal": 2
+    },
+    {
+        "name": "GearBox",
+        "type": 3,
+        "signal": 1
+    }
+]
