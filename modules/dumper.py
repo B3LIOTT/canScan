@@ -26,7 +26,7 @@ def load_config():
     return config, file_path
 
 
-def end_checks(file_path: str):
+def end_checks(file_path: str, sequence: list):
     print(f"File {file_path} has been created.")
     print('Do you want to save it ? (o/n)')
     choice = input()
@@ -34,6 +34,10 @@ def end_checks(file_path: str):
         os.remove(file_path)
         print(f"File {file_path} has been deleted.")
     else:
+        # TODO: pas ouf de faire ça ici
+        with open(file_path.replace('.csv', '.seq'), 'wt') as file:
+            for step in sequence:
+                file.write(f"{step[0]}:{step[1]}\n")
         print(f"File {file_path} has been saved.")
 
 
@@ -45,10 +49,9 @@ def listen(config: dict, file_path: str):
 
         file = open(file_path, 'wt')
         writer = can.CSVWriter(file)
-        printer = can.Printer()
-        notifier = can.Notifier(bus, [writer, printer])
+        notifier = can.Notifier(bus, [writer])
 
-        return printer, writer, file, notifier, bus
+        return writer, file, notifier, bus
         
     except Exception as e:
         print(f"Error while listenning CAN BUS: {e}")
@@ -56,3 +59,9 @@ def listen(config: dict, file_path: str):
             os.remove(file_path)
         exit(1)
 
+
+def dispose(writer, file, notifier, bus):
+    notifier.stop()
+    writer.stop()
+    file.close()
+    bus.shutdown()

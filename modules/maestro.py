@@ -1,4 +1,5 @@
 from models import Component, ComponentType, SignalType
+from modules.dumper import *
 from time import sleep
 import random
 import json
@@ -31,25 +32,38 @@ def orchestrates_sequence(component: Component, sequence, default_msg, rep: bool
     
     line = ""
     try:
+        if rep:
+            print("Listening to CAN bus...")
+            config, file_path = load_config()
+            zoomies = listen(config=config, file_path=file_path)
+            sleep(0.5)
+            print("Ready to record the sequence.\n")
+
         for i in range(SIZE):
             clear_terminal()
             line = init_line[:i] + "." + init_line[i+1:]
             print(f"{m}:\n{line}\n\t{messages[i]}")
-            sleep(1)  
+            sleep(1)
 
         if not rep:
             input("Press Enter to reproduce the sequence.")
             orchestrates_sequence(component, sequence, default_msg, True)
 
+        else:
+            dispose(*zoomies)
             again = input("Do you want to try again ? (o/n) > ")
             if again.lower() == "o":
+                os.remove(file_path)
                 orchestrates_sequence(component, sequence, default_msg, True)
 
+            end_checks(file_path, sequence)
+            print("Sequence reproduced, use the analyzer to determine the ID of the component.")
+
     except KeyboardInterrupt:
+        dispose(*zoomies)
         raise Exception("User interrupted.")  
 
-    print("Sequence reproduced, the analyzer will do his job.")
-    return sequence
+    return
 
 
 def generate_sequence(component: Component):
@@ -68,7 +82,7 @@ def generate_sequence(component: Component):
         print("Generating a random sequence for Continuous component.")
         input("Press Enter to continue...")
         default_msg = "go to initial position and wait"
-        seq = [(i, "increment progressively") for i in range(1, 5)] + [(i, "progressively") for i in range(8, SIZE-2)]
+        seq = [(i, "increment progressively") for i in range(1, 5)] + [(i, "increment progressively") for i in range(8, SIZE-2)]
 
         return orchestrates_sequence(component, seq, default_msg, False)
 
